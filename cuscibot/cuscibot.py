@@ -2,10 +2,12 @@ import json
 import requests
 import time
 
+#inserire il vero token
 token = 'sometokenhere'
 chat_ids = set()
 notified = set()
 
+#funzione per tenere traccia dell'ultima richiesta token e nel caso scaricarne uno nuovo dopo 30 gg
 def time_stamp():
 
     with open('timestamp.txt', 'r') as file:
@@ -20,18 +22,21 @@ def time_stamp():
         with open('timestamp.txt', 'w') as file:
             file.write(str(current_time))
 
+#funzione per tenere traccia delle chat attive col bot
 def write_data():    
     with open('datalist.txt', 'w') as file:
         
         for id in chat_ids:
             file.write(str(id) + '\n')           
 
+#funzione per tenere traccia degli utenti già notificati
 def write_notif():
     with open('notified.txt', 'w') as file:
         
         for id in notified:
             file.write(str(id) + '\n')
 
+#funzione per recuperare chat attive e utenti notificati
 def retrieve_data():
     with open('datalist.txt', 'r') as file:
         lines = file.readlines()
@@ -63,6 +68,7 @@ def retrieve_data():
         
             notified.add(id)
 
+#funzione per ottenere un token nuovo con l'API di Twitch - inserire il vero ID e il secret
 def get_token():
 
     url = 'https://id.twitch.tv/oauth2/token'
@@ -78,6 +84,7 @@ def get_token():
     with open('access.txt', 'w') as file:
         file.write(str(token))
 
+#funzione per verificare se il canale è in diretta con l'API di Twitch
 def check_live():
     
     with open('access.txt', 'r') as file:
@@ -108,6 +115,7 @@ def check_live():
         notified.clear()
         write_notif()
 
+#funzione per mandare messaggio in chat privata con l'API di Telegram
 def send_message(chat_id, text):
     url = f'https://api.telegram.org/bot{token}/sendMessage'
     param = {
@@ -117,6 +125,7 @@ def send_message(chat_id, text):
     }
     requests.post(url, json = param)
     
+#funzione per mandare messaggio in chat privata con l'API di Telegram senza thumbnail
 def send_message_nothumb(chat_id, text):
     url = f'https://api.telegram.org/bot{token}/sendMessage'
     param = {
@@ -127,6 +136,7 @@ def send_message_nothumb(chat_id, text):
     }
     requests.post(url, json = param)
 
+#funzione per il comando /start
 def start_comm(update):
     if 'message' in update:
         message = update['message']
@@ -143,6 +153,7 @@ def start_comm(update):
             elif '/start' in text and chat_id in chat_ids:
                 send_message_nothumb(chat_id, 'Mi hai già attivato in precedenza! Non preoccuparti, sto lavorando nell\'ombra per te! &#128077')
 
+#funzione per il comando /help
 def help_comm(update):
     if 'message' in update:
         message = update['message']
@@ -154,6 +165,7 @@ def help_comm(update):
             if '/help' in text:
                 send_message_nothumb(chat_id, '<b>Descrizione</b> &#129302\n\nMi presento: sono un bot con l\'unica funzione di notificare i miei utenti con un messaggio su Telegram ogni volta che il dottor Cùscito va in diretta sul <a href="https://twitch.tv/cuscitoergosum">suo canale Twitch</a>, così che tu non possa perderti nemmeno una live.\n\n<b>Comandi</b> &#127918\n\n/start - Attiva il bot\n/help - Informazioni utili\n/stop - Disattiva il bot\n\n<b>Privacy</b> &#128373\n\nQuesto bot non conserva nessun dato personale, ad eccezione del codice ID della chat in cui è attivo, e comunque solo temporaneamente. Attivando il bot, si dà il proprio assenso alla conservazione temporanea di questo dato solo ed esclusivamente al fine di poter far funzionare correttamente il bot. Se un utente arresta il bot tramite il comando specifico o anche tramite l\'opzione offerta dall\'applicazione Telegram, il codice verrà automaticamente e permanentemente cancellato. In ogni caso questi dati non verranno mai condivisi con terze parti, né per fini analitici, né tantomeno commerciali.\n\n<b>Contatti</b> &#9997\n\nPer qualsiasi ulteriore informazione, suggerimenti, segnalazioni ed altro, scrivere a: cuscitoergobot@proton.me')
 
+#funzione per il comando /stop
 def stop_comm(update):
     if 'message' in update:
         message = update['message']
@@ -165,6 +177,7 @@ def stop_comm(update):
             if '/stop' in text and chat_id in chat_ids:
                 send_message_nothumb(chat_id, '&#9888 Stai procedendo con la disattivazione del bot.\n\nNon ti manderà più notifiche fino a nuova riattivazione, ma potrai comunque sempre lanciare il comando /help per informazioni.\n\n&#9989 /conferma')
 
+#funzione per il comando /conferma
 def conf_comm(update):
     if 'message' in update:
         message = update['message']
@@ -179,7 +192,8 @@ def conf_comm(update):
                 write_data()
                 notified.discard(chat_id)
                 write_notif()
-                                 
+                 
+#funzione per verificare continuamente se ci sono interazioni fra utente e bot       
 def get_updates():
     last_update = None
     
@@ -215,5 +229,6 @@ def get_updates():
         check_live()
         time.sleep(1.5)
 
+#main
 retrieve_data()        
 get_updates()
