@@ -4,9 +4,11 @@ Cùscibot è un semplice bot per l'applicazione di messaggistica istantanea [Tel
 
 ### Comandi 🎮
 
-<font color=lightblue>/start</font> - Attiva il bot
-<font color=lightblue>/help</font> - Informazioni utili
-<font color=lightblue>/stop</font> - Disattiva il bot
+/start - Attiva il bot
+
+/help - Informazioni utili
+
+/stop - Disattiva il bot
 
 ### Privacy 🕵️
 
